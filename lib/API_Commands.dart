@@ -12,19 +12,13 @@ Future<void> Login(int id, String password) async {
   try {
     final data = json.decode(response.body);
 
-    // Extract individual values
-    int id = data[0]['id'];
-    String name = data[0]['name'];
-    int role = data[0]['role'];
-    print(name);
     if (response.statusCode == 200) {
+      // Extract individual values
+      int id = data[0]['id'];
+      String name = data[0]['name'];
+      int role = data[0]['role'];
+      print(name);
       // Parse the response
-      
-      /*final data = jsonDecode(response.body);
-      final role = int.parse(data['role']);
-      final uid = int.parse(data['id']);
-      final name = data['name'];*/
-      // Store the login data in shared preferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setInt('role', role); // Save userId as an integer
       await prefs.setString('name', name); // Save name as a string
