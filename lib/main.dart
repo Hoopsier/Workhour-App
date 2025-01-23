@@ -1,10 +1,9 @@
-//import 'dart:math'; not used so
-
 import 'package:flutter/material.dart';
-import 'package:kurssiprojekti/API_Commands.dart';
+import 'package:kurssiprojekti/Navigation/custom_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-/// Flutter code sample for [NavigationBar].
+import 'Navigation/profile_page.dart';
+import 'Navigation/notifications_page.dart';
+import 'Navigation/home_page.dart';
 
 void main() => runApp(const NavigationBarApp());
 
@@ -29,14 +28,11 @@ class NavigationExample extends StatefulWidget {
 
 class _NavigationExampleState extends State<NavigationExample> {
   late SharedPreferences _prefs;
-  static int currentPageIndex = 0;
-  static late String? name;
-  static late String password;
-  final TextEditingController idController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
-  static late int role;
-  static late String homeText;
-  static late int Id_;
+  int currentPageIndex = 0;
+  String? name;
+  String password = "null";
+  int role = 0;
+  int id = -1;
 
   @override
   void initState() {
@@ -47,10 +43,10 @@ class _NavigationExampleState extends State<NavigationExample> {
   Future<void> _initializeSharedPreferences() async {
     _prefs = await SharedPreferences.getInstance();
     setState(() {
-      name = _prefs.getString('name') ?? null;
+      name = _prefs.getString('name');
       role = _prefs.getInt('role') ?? 0;
       password = _prefs.getString('password') ?? "null";
-      Id_ = _prefs.getInt('id') ?? -1;
+      id = _prefs.getInt('id') ?? -1;
     });
   }
 
@@ -60,172 +56,36 @@ class _NavigationExampleState extends State<NavigationExample> {
 
   @override
   Widget build(BuildContext context) {
-    if (Id_ != -1 && password != "null") {
-      Login(Id_, password);
-    }
-    final ThemeData theme = Theme.of(context);
-    final Map loggedInOrNah = {
-      0: "Please log in to add or edit your workhours.",
-      1: "Welcome $name!"
-    };
-    if (role == 0) {
-      homeText = loggedInOrNah[0];
-    } else {
-      homeText = loggedInOrNah[1];
-    }
+    final List<Widget> pages = [
+      HomePage(
+        name: name,
+        role: role,
+        password: password,
+        id: id,
+        refreshData: refreshData,
+      ),
+      const NotificationsPage(),
+      ProfilePage(
+        idController: TextEditingController(),
+        passwordController: TextEditingController(),
+        refreshData: refreshData,
+      ),
+    ];
+
     return Scaffold(
-      bottomNavigationBar: NavigationBar(
-        onDestinationSelected: (int index) {
+      appBar: AppBar(
+        backgroundColor: Colors.red,
+        title: const Text('Work Hours'),
+      ),
+      bottomNavigationBar: CustomNavigationBar(
+        currentIndex: currentPageIndex,
+        onIndexChanged: (index) {
           setState(() {
             currentPageIndex = index;
           });
         },
-        indicatorColor: Colors.amber,
-        selectedIndex: currentPageIndex,
-        destinations: const <Widget>[
-          NavigationDestination(
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.search),
-            label: 'Search',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
       ),
-      body: <Widget>[
-        /// Home page
-        Card(
-          shadowColor: Colors.transparent,
-          margin: const EdgeInsets.all(8.0),
-          child: SizedBox.expand(
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      style: ButtonStyle(
-                        iconSize: WidgetStateProperty.all<double>(40.0),
-                        backgroundColor:
-                            WidgetStateProperty.all<Color>(Colors.blue),
-                        iconColor: WidgetStateProperty.all<Color>(Colors.white),
-                      ),
-                      onPressed: () {
-                        print('Add');
-                      },
-                      icon: const Icon(Icons.add),
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(16.0),
-                      child: IconButton(
-                        style: ButtonStyle(
-                          iconSize: WidgetStateProperty.all<double>(40.0),
-                          backgroundColor:
-                              WidgetStateProperty.all<Color>(Colors.blue),
-                          iconColor:
-                              WidgetStateProperty.all<Color>(Colors.white),
-                        ),
-                        onPressed: () {
-                          print('Edit');
-                        },
-                        icon: const Icon(Icons.edit),
-                      ),
-                    ),
-                  ],
-                ),
-                Row(children: [Text(homeText)]),
-              ],
-            ),
-          ),
-        ),
-
-        /// Notifications page
-        const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Column(
-            children: <Widget>[
-              Card(
-                child: ListTile(
-                  leading: Icon(Icons.notifications_sharp),
-                  title: Text('Notification 1'),
-                  subtitle: Text('This is a notification'),
-                ),
-              ),
-              Card(
-                child: ListTile(
-                  leading: Icon(Icons.notifications_sharp),
-                  title: Text('Notification 2'),
-                  subtitle: Text('This is a notification'),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        /// Messages page
-        ListView.builder(
-          reverse: true,
-          itemCount: 2,
-          itemBuilder: (BuildContext context, int index) {
-            if (index == 0) {
-              return Align(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: idController,
-                        decoration: InputDecoration(labelText: 'ID'),
-                        keyboardType: TextInputType.number,
-                      ),
-                      TextField(
-                        controller: passwordController,
-                        decoration: InputDecoration(labelText: 'Password'),
-                        obscureText: true,
-                      ),
-                      SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          final id = int.parse(idController.text);
-                          final password = passwordController.text;
-                          Login(id, password);
-                          refreshData();
-                        },
-                        child: Text('Login'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: Container(
-                margin: const EdgeInsets.all(8.0),
-                padding: const EdgeInsets.all(8.0),
-                decoration: BoxDecoration(
-                  color: const Color.fromARGB(255, 47, 0, 255),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: Text(
-                  homeText,
-                  style: theme.textTheme.bodyLarge!
-                      .copyWith(color: theme.colorScheme.onPrimary),
-                ),
-              ),
-            );
-          },
-        ),
-      ][currentPageIndex],
-      appBar: AppBar(
-        backgroundColor: Colors.red,
-        title: Text('Work Hours'),
-      ),
+      body: pages[currentPageIndex],
     );
   }
 }
