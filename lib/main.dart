@@ -1,8 +1,5 @@
 //import 'dart:math'; not used so
 
-import 'dart:collection';
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:kurssiprojekti/API_Commands.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -31,25 +28,49 @@ class NavigationExample extends StatefulWidget {
 }
 
 class _NavigationExampleState extends State<NavigationExample> {
-  int currentPageIndex = 0;
-  late String? name;
+  late SharedPreferences _prefs;
+  static int currentPageIndex = 0;
+  static late String? name;
+  static late String password;
   final TextEditingController idController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  late int role = 0;
-  late String homeText;
-     
+  static late int role;
+  static late String homeText;
+  static late int Id_;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeSharedPreferences();
+  }
+
+  Future<void> _initializeSharedPreferences() async {
+    _prefs = await SharedPreferences.getInstance();
+    setState(() {
+      name = _prefs.getString('name') ?? null;
+      role = _prefs.getInt('role') ?? 0;
+      password = _prefs.getString('password') ?? "null";
+      Id_ = _prefs.getInt('id') ?? -1;
+    });
+  }
+
+  void refreshData() async {
+    await _initializeSharedPreferences();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (Id_ != -1 && password != "null") {
+      Login(Id_, password);
+    }
     final ThemeData theme = Theme.of(context);
     final Map loggedInOrNah = {
-      0 : "Please log in to add or edit your workhours.",
-      1 : "Welcome !"//$name
+      0: "Please log in to add or edit your workhours.",
+      1: "Welcome $name!"
     };
-    if(role == 0)
-    {
+    if (role == 0) {
       homeText = loggedInOrNah[0];
-    }
-    else{
+    } else {
       homeText = loggedInOrNah[1];
     }
     return Scaffold(
@@ -117,10 +138,7 @@ class _NavigationExampleState extends State<NavigationExample> {
                     ),
                   ],
                 ),
-                Row(
-                  
-                  children: [Text(homeText)]
-                ),
+                Row(children: [Text(homeText)]),
               ],
             ),
           ),
@@ -176,6 +194,7 @@ class _NavigationExampleState extends State<NavigationExample> {
                           final id = int.parse(idController.text);
                           final password = passwordController.text;
                           Login(id, password);
+                          refreshData();
                         },
                         child: Text('Login'),
                       ),
@@ -194,7 +213,7 @@ class _NavigationExampleState extends State<NavigationExample> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
                 child: Text(
-                  'Please login to access your log your hours.',
+                  homeText,
                   style: theme.textTheme.bodyLarge!
                       .copyWith(color: theme.colorScheme.onPrimary),
                 ),
