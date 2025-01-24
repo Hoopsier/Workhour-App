@@ -5,7 +5,7 @@ class HomePage extends StatelessWidget {
   final int role;
   final String password;
   final int id;
-  final VoidCallback refreshData;
+  final VoidCallback initializeData;
 
   const HomePage({
     super.key,
@@ -13,7 +13,7 @@ class HomePage extends StatelessWidget {
     required this.role,
     required this.password,
     required this.id,
-    required this.refreshData,
+    required this.initializeData,
   });
 
   @override
