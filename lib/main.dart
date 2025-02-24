@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kurssiprojekti/Navigation/custom_navigation_bar.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:shared_preferences/shared_preferences.dart'; //Change all shared preferences into temporary variables for MVP
 import 'Navigation/profile_page.dart';
 import 'Navigation/notifications_page.dart';
 import 'Navigation/home_page.dart';
